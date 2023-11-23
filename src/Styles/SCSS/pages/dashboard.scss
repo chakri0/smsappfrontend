@@ -1,0 +1,12 @@
+.main-drawer-closed {
+	.MuiDrawer-paper {
+		width: 5%;
+		overflow: hidden;
+	}
+}
+
+.main-drawer-open {
+	.MuiDrawer-paper {
+		width: 256px;
+	}
+}

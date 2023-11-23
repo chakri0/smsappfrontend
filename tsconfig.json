@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"jsx": "react",
+		"skipLibCheck": true,
+		"lib": ["es5", "es6", "DOM"],
+		"declaration": true,
+		"declarationMap": true,
+		"target": "ES6",
+		"module": "CommonJS",
+		"moduleResolution": "node",
+		"outDir": "./build",
+		"esModuleInterop": true,
+		"strict": true,
+		"strictFunctionTypes": false,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"sourceMap": true,
+		"baseUrl": ".",
+		"paths": {
+			"Assets/*": ["src/Assets/*"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.scss"]
+}
