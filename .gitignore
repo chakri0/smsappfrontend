@@ -7,7 +7,7 @@
 dist/
 .cache/
 .parcel-cache/
-.env
+#.env
 
 # testing
 /coverage
