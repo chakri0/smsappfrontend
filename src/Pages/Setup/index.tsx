@@ -50,7 +50,7 @@ const SetupAccount = (): React.JSX.Element => {
 	});
 
 	const userEmail = searchParams.get('email');
-	// const token = searchParams.get('token');
+	const token = searchParams.get('token');
 
 	const handleChange = (e: {
 		target: { name: string; value: string };
@@ -86,15 +86,18 @@ const SetupAccount = (): React.JSX.Element => {
 			return;
 		}
 
-		const requestBody = {
-			email: userEmail ?? '',
-			password,
-		};
+		if (token != null) {
+			const requestBody = {
+				token,
+				email: userEmail ?? '',
+				password,
+			};
 
-		const result = await dispatch(setupAccount(requestBody));
-		if (!isAPIActionRejected(result.type)) {
-			toast.success('Account setup successful');
-			navigate('/login');
+			const result = await dispatch(setupAccount(requestBody));
+			if (!isAPIActionRejected(result.type)) {
+				toast.success('Account setup successful');
+				navigate('/login');
+			}
 		}
 	};
 

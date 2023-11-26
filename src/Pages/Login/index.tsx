@@ -10,19 +10,12 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-
-// Services
-import { userLogin } from '../../Services/Reducers/UserReducer';
-import { type AppDispatch } from '../../Services/store';
-
-// Utils
-import { isAPIActionRejected } from '../../Utils/helper';
 
 // Assets
 import phillyLogo from '../../Assets/Images/Phillys_Logo.png';
-import { useAppSelector } from 'src/Hooks/reduxHooks';
-import Loader from 'src/Layout/Loader';
+import { useAppSelector } from '../../Hooks/reduxHooks';
+import Loader from '../../Layout/Loader';
+import useAuth from '../../Hooks/useAuth';
 
 const isEmailValid = (email: string): boolean => {
 	const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -37,7 +30,7 @@ const isPasswordValid = (password: string): boolean => {
 
 const Login = (): React.JSX.Element => {
 	const navigate = useNavigate();
-	const dispatch = useDispatch<AppDispatch>();
+	const { signIn } = useAuth();
 
 	const { loading } = useAppSelector((state) => state.user);
 
@@ -78,11 +71,7 @@ const Login = (): React.JSX.Element => {
 			password,
 		};
 
-		const result = await dispatch(userLogin(requestBody));
-		if (!isAPIActionRejected(result.type)) {
-			toast.success('Login Successful');
-			navigate('/');
-		}
+		void signIn(requestBody);
 	};
 
 	return (

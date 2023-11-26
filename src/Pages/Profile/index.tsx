@@ -1,19 +1,35 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
 import { Button, Divider, Grid, TextField, Typography } from '@mui/material';
+
+// Assets
 import userProfileImage from '../../Assets/Images/userProfile.svg';
+
+// Services
+import { type AppDispatch } from '../../Services/store';
+import { updateProfile } from '../../Services/Reducers/UserReducer';
+
+// Utils
+import { isAPIActionRejected } from '../../Utils/helper';
 
 interface ProfileDetails {
 	firstName: string;
 	lastName?: string;
 	email: string;
-	mobileNumber?: number;
+	phoneNumber?: number;
 	role: string;
 	branch?: string;
+	oldPassword?: string;
+	newPassword?: string;
+	confirmPassword?: string;
 }
 
 const ProfileSettings = (): React.JSX.Element => {
+	const dispatch = useDispatch<AppDispatch>();
 	const [userProfileDetails, setUserProfileDetails] =
 		useState<ProfileDetails>();
 
@@ -26,9 +42,9 @@ const ProfileSettings = (): React.JSX.Element => {
 				firstName: userInfo.user.user.firstName,
 				lastName: userInfo.user.user.lastName ?? '',
 				email: userInfo.user.user.email,
-				mobileNumber: userInfo.user.user.phoneNumber,
+				phoneNumber: userInfo.user.user.phoneNumber,
 				role: userInfo.user.user.role.roleName,
-				branch: userInfo.user.user.branch.storeName ?? '',
+				branch: userInfo.user.user.branch?.storeName ?? '',
 			};
 			setUserProfileDetails(formattedUserDetails);
 		}
@@ -39,6 +55,34 @@ const ProfileSettings = (): React.JSX.Element => {
 			...prevData,
 			[field]: value,
 		}));
+	};
+
+	const handleUpdateProfile = async (): Promise<void> => {
+		if (userProfileDetails !== undefined) {
+			if (userProfileDetails?.oldPassword !== '') {
+				if (
+					userProfileDetails?.newPassword?.trim() !==
+					userProfileDetails?.confirmPassword?.trim()
+				) {
+					toast.error('Password does not match');
+					return;
+				}
+			}
+
+			const requestBody = {
+				firstName: userProfileDetails.firstName,
+				lastName: userProfileDetails.lastName,
+				email: userProfileDetails.email,
+				phoneNumber: userProfileDetails.phoneNumber,
+				oldPassword: userProfileDetails.oldPassword,
+				newPassword: userProfileDetails.newPassword,
+			};
+
+			const result = await dispatch(updateProfile(requestBody));
+			if (!isAPIActionRejected(result.type)) {
+				toast.success('User profile updated successful');
+			}
+		}
 	};
 
 	return (
@@ -108,10 +152,10 @@ const ProfileSettings = (): React.JSX.Element => {
 							sx={{ width: '100%' }}
 							type="number"
 							placeholder="Contact Number"
-							value={userProfileDetails?.mobileNumber}
+							value={userProfileDetails?.phoneNumber}
 							onChange={(e) => {
 								handleInputChange(
-									'mobileNumber',
+									'phoneNumber',
 									e.target.value,
 								);
 							}}
@@ -160,21 +204,43 @@ const ProfileSettings = (): React.JSX.Element => {
 							sx={{ width: '45%' }}
 							type="password"
 							placeholder="Old Password"
+							onChange={(e) => {
+								handleInputChange(
+									'oldPassword',
+									e.target.value,
+								);
+							}}
 						/>
+
 						<TextField
 							sx={{ width: '45%' }}
 							type="password"
 							placeholder="New Password"
+							onChange={(e) => {
+								handleInputChange(
+									'newPassword',
+									e.target.value,
+								);
+							}}
 						/>
 						<TextField
 							sx={{ width: '45%' }}
 							type="password"
 							placeholder="Confirm New Password"
+							onChange={(e) => {
+								handleInputChange(
+									'confirmPassword',
+									e.target.value,
+								);
+							}}
 						/>
 					</Box>
 
 					<Box>
-						<Button variant="contained" size="large">
+						<Button
+							variant="contained"
+							size="large"
+							onClick={handleUpdateProfile}>
 							Update
 						</Button>
 					</Box>

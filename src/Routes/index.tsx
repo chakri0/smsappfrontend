@@ -11,15 +11,48 @@ import ManageItems from '../Pages/ManageItem';
 import ProfileSettings from '../Pages/Profile';
 import ManageBranch from '../Pages/ManageBranch';
 import AccountSetup from '../Pages/Setup';
+import ProtectedRoute from '../Component/Common/ProtectedRoute';
+import GuestRoute from '../Component/Common/GuestRoute';
 
 const Router = (): React.JSX.Element => {
 	return (
 		<Suspense fallback={null}>
 			<Routes>
-				<Route path="/login" Component={Login} />
-				<Route path="/forgot-password" Component={ForgotPassword} />
-				<Route path="/reset-password" Component={ResetPassword} />
-				<Route path="/accountSetup" Component={AccountSetup} />
+				<Route
+					path="/login"
+					element={
+						<GuestRoute>
+							<Login />
+						</GuestRoute>
+					}
+				/>
+				<Route
+					path="/forgot-password"
+					element={
+						<GuestRoute>
+							<ForgotPassword />
+						</GuestRoute>
+					}
+					// Component={ForgotPassword}
+				/>
+				<Route
+					path="/reset-password"
+					element={
+						<GuestRoute>
+							<ResetPassword />
+						</GuestRoute>
+					}
+					// Component={ResetPassword}
+				/>
+				<Route
+					path="/accountSetup"
+					element={
+						<GuestRoute>
+							<AccountSetup />
+						</GuestRoute>
+					}
+					// Component={AccountSetup}
+				/>
 
 				<Route
 					element={
@@ -28,11 +61,47 @@ const Router = (): React.JSX.Element => {
 							<Outlet />{' '}
 						</CommonLayout>
 					}>
-					<Route path="/" Component={Dashboard} />
-					<Route path="/invite-user" Component={InviteUser} />
-					<Route path="/manage-item" Component={ManageItems} />
-					<Route path="/profile" Component={ProfileSettings} />
-					<Route path="/manage-branch" Component={ManageBranch} />
+					<Route
+						path="/profile"
+						element={
+							<ProtectedRoute>
+								<ProfileSettings />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/"
+						element={
+							<ProtectedRoute>
+								<Dashboard />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/invite-user"
+						element={
+							<ProtectedRoute>
+								<InviteUser />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/manage-item"
+						element={
+							<ProtectedRoute>
+								<ManageItems />
+							</ProtectedRoute>
+						}
+					/>
+					{/* ś<Route path="/profile" Component={ProfileSettings} /> */}
+					<Route
+						path="/manage-branch"
+						element={
+							<ProtectedRoute>
+								<ManageBranch />
+							</ProtectedRoute>
+						}
+					/>
 				</Route>
 
 				<Route path="*" element={<Navigate to="/" />} />

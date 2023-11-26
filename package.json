@@ -11,15 +11,10 @@
 		"prepare": "husky install"
 	},
 	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Swatantrapeshewar/PhillysBestPizza-Frontend.git"
+		"type": "git"
 	},
 	"author": "KavalakuntlaChakradhar",
 	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/Swatantrapeshewar/PhillysBestPizza-Frontend/issues"
-	},
-	"homepage": "https://github.com/Swatantrapeshewar/PhillysBestPizza-Frontend#readme",
 	"devDependencies": {
 		"@commitlint/cli": "^18.2.0",
 		"@commitlint/config-conventional": "^18.1.0",

@@ -12,18 +12,21 @@ import theme from '../Styles/Theme';
 import NavigationScroll from '../Layout/NavigationScroll';
 
 import Router from '../Routes';
+import { AuthProvider } from '../Hooks/useAuth';
 
 function App(): React.JSX.Element {
 	return (
 		<StyledEngineProvider injectFirst>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<BrowserRouter>
-					<NavigationScroll>
-						<Router />
-						<ToastContainer />
-					</NavigationScroll>
-				</BrowserRouter>
+				<AuthProvider>
+					<BrowserRouter>
+						<NavigationScroll>
+							<Router />
+							<ToastContainer />
+						</NavigationScroll>
+					</BrowserRouter>
+				</AuthProvider>
 			</ThemeProvider>
 		</StyledEngineProvider>
 	);
