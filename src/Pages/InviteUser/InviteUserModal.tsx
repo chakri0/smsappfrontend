@@ -21,10 +21,18 @@ import { fetchBranches } from '../../Services/Reducers/BranchReducer';
 import { isAPIActionRejected } from '../../Utils/helper';
 
 // Layout
-import Loader from '../../Layout/Loader';
+// import Loader from '../../Layout/Loader';
 
 // Services
-import { inviteUser } from '../../Services/Reducers/UserReducer';
+import {
+	getBranchesUser,
+	inviteUser,
+	updateUser,
+} from '../../Services/Reducers/UserReducer';
+
+// Interfaces
+import { type UserRoleResponse } from '../../Services/APIs/UserAPI';
+import { type ListBranchesResponse } from '../../Services/APIs/BranchAPI';
 
 const style = {
 	position: 'absolute' as const,
@@ -40,11 +48,25 @@ const style = {
 	p: 4,
 };
 
+interface EditUserDetailsProps {
+	id: string;
+	email?: string;
+	firstName?: string | undefined;
+	lastName?: string | undefined;
+	avatar?: string | undefined;
+	phoneNumber?: number | undefined;
+	role?: UserRoleResponse;
+	branch?: ListBranchesResponse;
+	action?: string;
+}
+
 interface AddUpdateBranchProps {
 	open: boolean;
 	handleClose: () => void;
+	toBeEditedUserDetails: EditUserDetailsProps;
 }
 interface UserDataState {
+	id: string;
 	name: string;
 	email: string;
 	role: string;
@@ -52,27 +74,43 @@ interface UserDataState {
 }
 
 const initialBranchDataState = {
+	id: '',
 	name: '',
 	email: '',
-	role: '',
-	branch: '',
+	role: 'Select Role',
+	branch: 'Select Branch',
 };
 const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 	const dispatch = useAppDispatch();
 
-	const { open, handleClose } = props;
+	const { open, handleClose, toBeEditedUserDetails } = props;
 
 	const { branches } = useAppSelector((state) => state.branch);
-	const { loading } = useAppSelector((state) => state.user);
+	// const { loading } = useAppSelector((state) => state.user);
 
 	const [userData, setUserData] = useState<UserDataState>(
 		initialBranchDataState,
 	);
-	const [branch, setBranch] = React.useState('');
 
 	useEffect(() => {
-		setUserData(initialBranchDataState);
-	}, [open]);
+		if (toBeEditedUserDetails.id !== '') {
+			setUserData({
+				id: toBeEditedUserDetails.id ?? '',
+				name: toBeEditedUserDetails.firstName ?? '',
+				email: toBeEditedUserDetails.email ?? '',
+				role:
+					toBeEditedUserDetails.role != null
+						? toBeEditedUserDetails?.role.roleName ?? ''
+						: 'Select Role',
+				branch:
+					toBeEditedUserDetails.branch != null
+						? toBeEditedUserDetails?.branch.id ?? ''
+						: 'Select Branch',
+			});
+		} else {
+			setUserData(initialBranchDataState);
+		}
+	}, [open, toBeEditedUserDetails]);
 
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
@@ -86,6 +124,26 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 		void fetchData();
 	}, [dispatch]);
 
+	const validateUserDetails = (): boolean => {
+		if (userData.name.trim() === '') {
+			toast.error('Please enter user name');
+			return false;
+		}
+		if (userData.email.trim() === '') {
+			toast.error('Please enter user email');
+			return false;
+		}
+		if (userData.role.trim() === 'Select Role') {
+			toast.error('Please enter user role');
+			return false;
+		}
+		if (userData.branch.trim() === 'Select Branch') {
+			toast.error('Please enter user branch');
+			return false;
+		}
+		return true;
+	};
+
 	const handleInputChange = (field: string, value: string): void => {
 		setUserData((prevData: UserDataState) => ({
 			...prevData,
@@ -94,27 +152,14 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 	};
 
 	const handleInvite = async (): Promise<void> => {
-		if (userData.name.trim() === '') {
-			toast.error('Please enter user name');
-			return;
-		}
-		if (userData.email.trim() === '') {
-			toast.error('Please enter user email');
-			return;
-		}
-		if (userData.role.trim() === '') {
-			toast.error('Please enter user role');
-			return;
-		}
-		if (branch.trim() === '') {
-			toast.error('Please enter user branch');
+		if (!validateUserDetails()) {
 			return;
 		}
 		const requestBody = {
 			firstName: userData.name,
 			email: userData.email,
 			role: userData.role,
-			branchId: branch,
+			branchId: userData.branch,
 		};
 		const result = await dispatch(inviteUser(requestBody));
 		if (!isAPIActionRejected(result.type)) {
@@ -124,9 +169,26 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 		}
 	};
 
+	const handleUpdateUser = async (): Promise<void> => {
+		if (!validateUserDetails()) {
+			return;
+		}
+		const requestBody = {
+			userId: userData.id,
+			firstName: userData.name,
+			role: userData.role,
+			branch: userData.branch,
+		};
+		const result = await dispatch(updateUser(requestBody));
+		if (!isAPIActionRejected(result.type)) {
+			toast.success('User updated Successfully');
+			await dispatch(getBranchesUser(userData.branch));
+			handleClose();
+		}
+	};
+
 	return (
 		<>
-			<Loader open={loading} />
 			<Modal
 				open={open}
 				onClose={handleClose}
@@ -152,6 +214,7 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="text"
 									placeholder="Name"
 									value={userData.name}
@@ -175,9 +238,11 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="email"
 									placeholder="Address"
 									value={userData.email}
+									disabled={toBeEditedUserDetails.id !== ''}
 									onChange={(e) => {
 										handleInputChange(
 											'email',
@@ -193,18 +258,10 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 									justifyContent: 'space-between',
 									alignTtems: 'baseline',
 								}}>
-								<InputLabel sx={{ marginRight: '10%' }}>
-									Role
-								</InputLabel>
+								<InputLabel>Role</InputLabel>
 								<FormControl
-									sx={{ mt: 0, mb: 0, mr: 3, minWidth: 105 }}>
-									<InputLabel id="branch-select-autowidth-label">
-										Role
-									</InputLabel>
+									sx={{ mt: 0, mb: 0, width: '65%' }}>
 									<Select
-										labelId="branch-select-autowidth-label"
-										id="branch-select-autowidth"
-										sx={{ width: '100%' }}
 										value={userData.role}
 										onChange={(e) => {
 											handleInputChange(
@@ -212,13 +269,16 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 												e.target.value,
 											);
 										}}
-										autoWidth
-										label="Branch"
 										size="small">
-										<MenuItem value={'Manager'}>
+										<MenuItem
+											key="default-select-value-role"
+											value="Select Role">
+											Select Role
+										</MenuItem>
+										<MenuItem value={'manager'}>
 											Manager
 										</MenuItem>
-										<MenuItem value={'Admin'}>
+										<MenuItem value={'admin'}>
 											Admin
 										</MenuItem>
 									</Select>
@@ -231,25 +291,23 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 									justifyContent: 'space-between',
 									alignTtems: 'baseline',
 								}}>
-								<InputLabel sx={{ marginRight: '10%' }}>
-									Branch
-								</InputLabel>
+								<InputLabel>Branch</InputLabel>
 								<FormControl
-									sx={{ mt: 0, mb: 0, mr: 3, minWidth: 105 }}>
-									<InputLabel id="branch-select-autowidth-label">
-										Branch
-									</InputLabel>
+									sx={{ mt: 0, mb: 0, width: '65%' }}>
 									<Select
-										labelId="branch-select-autowidth-label"
-										// id="branch-select-autowidth"
-										sx={{ width: '100%' }}
-										value={branch}
+										value={userData.branch}
 										onChange={(e) => {
-											setBranch(e.target.value);
+											handleInputChange(
+												'branch',
+												e.target.value,
+											);
 										}}
-										// autoWidth
-										label="Branch"
 										size="small">
+										<MenuItem
+											key="default-select-value-branch"
+											value="Select Branch">
+											Select Branch
+										</MenuItem>
 										{branches.map((branchItem) => (
 											<MenuItem
 												key={branchItem.id}
@@ -276,15 +334,25 @@ const InviteUser = (props: AddUpdateBranchProps): React.JSX.Element => {
 							onClick={handleClose}>
 							Cancel
 						</Button>
-
-						<Button
-							variant="contained"
-							size="medium"
-							onClick={() => {
-								void handleInvite();
-							}}>
-							Invite
-						</Button>
+						{toBeEditedUserDetails.id === '' ? (
+							<Button
+								variant="contained"
+								size="large"
+								onClick={() => {
+									void handleInvite();
+								}}>
+								Invite
+							</Button>
+						) : (
+							<Button
+								variant="contained"
+								size="large"
+								onClick={() => {
+									void handleUpdateUser();
+								}}>
+								Update
+							</Button>
+						)}
 					</Box>
 				</Box>
 			</Modal>

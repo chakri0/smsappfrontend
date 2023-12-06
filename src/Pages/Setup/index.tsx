@@ -29,7 +29,7 @@ import Loader from '../../Layout/Loader';
 // 	return emailRegex.test(email);
 // };
 
-const isPasswordValid = (password: string): boolean => {
+export const isPasswordValid = (password: string): boolean => {
 	const passwordRegex =
 		/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 	return passwordRegex.test(password);
@@ -134,27 +134,6 @@ const SetupAccount = (): React.JSX.Element => {
 							value={userEmail}
 							disabled
 							autoFocus
-							sx={{
-								backgroundColor: '#ededed',
-								borderRadius: '31.5px',
-								'& .MuiOutlinedInput-root': {
-									border: 'none',
-									borderRadius: '30px',
-								},
-								'& .MuiInput-underline:after': {
-									borderBottom: 'none',
-									borderColor: '#FF6347',
-								},
-								'& .MuiInputBase-input:focus': {
-									borderColor: '#FF6347',
-								},
-							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
-							}}
 						/>
 						<TextField
 							margin="normal"
@@ -167,27 +146,6 @@ const SetupAccount = (): React.JSX.Element => {
 							autoComplete="current-password"
 							value={formData.password}
 							onChange={handleChange}
-							sx={{
-								backgroundColor: '#ededed',
-								borderRadius: '31.5px',
-								'& .MuiOutlinedInput-root': {
-									border: 'none',
-									borderRadius: '30px',
-								},
-								'& .MuiInput-underline:after': {
-									borderBottom: 'none',
-									borderColor: '#FF6347',
-								},
-								'& .MuiInputBase-input:focus': {
-									borderColor: '#FF6347',
-								},
-							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
-							}}
 						/>
 
 						<TextField
@@ -201,27 +159,6 @@ const SetupAccount = (): React.JSX.Element => {
 							autoComplete="current-password"
 							value={formData.confirmPassword}
 							onChange={handleChange}
-							sx={{
-								backgroundColor: '#ededed',
-								borderRadius: '31.5px',
-								'& .MuiOutlinedInput-root': {
-									border: 'none',
-									borderRadius: '30px',
-								},
-								'& .MuiInput-underline:after': {
-									borderBottom: 'none',
-									borderColor: '#FF6347',
-								},
-								'& .MuiInputBase-input:focus': {
-									borderColor: '#FF6347',
-								},
-							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
-							}}
 						/>
 
 						<Button

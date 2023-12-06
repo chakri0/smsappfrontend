@@ -73,7 +73,7 @@ export interface ToBeEditedItem {
 const initialItemData = {
 	name: '',
 	description: '',
-	category: '',
+	category: 'Select Category',
 	image: '',
 	overallThreshold: '',
 	weeklyThreshold: '',
@@ -108,7 +108,8 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 			setItemDetails({
 				name: toBeEditedItemDetails.name ?? '',
 				description: toBeEditedItemDetails.description ?? '',
-				category: toBeEditedItemDetails?.category?.id ?? '',
+				category:
+					toBeEditedItemDetails?.category?.id ?? 'Select Category',
 				image: toBeEditedItemDetails.image ?? '',
 				overallThreshold: toBeEditedItemDetails.overallThreshold ?? '',
 				weeklyThreshold: toBeEditedItemDetails.weeklyThreshold ?? '',
@@ -125,6 +126,26 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 		await dispatch(fetchCategories());
 	}
 
+	const validateItemDetails = (): boolean => {
+		if (itemDetails.name.trim() === '') {
+			toast.error('Please enter item name');
+			return false;
+		}
+		if (itemDetails.category.trim() === 'Select Category') {
+			toast.error('Please select item category');
+			return false;
+		}
+		if (itemDetails.overallThreshold.trim() === '') {
+			toast.error('Please enter item overall threshold');
+			return false;
+		}
+		if (itemDetails.weeklyThreshold.trim() === '') {
+			toast.error('Please enter item weekly threshold');
+			return false;
+		}
+		return true;
+	};
+
 	const handleInputChange = (field: string, value: string): void => {
 		setItemDetails((prevData: ItemDataState) => ({
 			...prevData,
@@ -133,20 +154,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 	};
 
 	const handleCreateItem = async (): Promise<void> => {
-		if (itemDetails.name.trim() === '') {
-			toast.error('Please enter item name');
-			return;
-		}
-		if (itemDetails.category.trim() === '') {
-			toast.error('Please select item category');
-			return;
-		}
-		if (itemDetails.overallThreshold.trim() === '') {
-			toast.error('Please enter item overall threshold');
-			return;
-		}
-		if (itemDetails.weeklyThreshold.trim() === '') {
-			toast.error('Please enter item weekly threshold');
+		if (!validateItemDetails()) {
 			return;
 		}
 
@@ -168,20 +176,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 	};
 
 	const handleUpdateItem = async (): Promise<void> => {
-		if (itemDetails.name.trim() === '') {
-			toast.error('Please enter item name');
-			return;
-		}
-		if (itemDetails.category.trim() === '') {
-			toast.error('Please select item category');
-			return;
-		}
-		if (itemDetails.overallThreshold.trim() === '') {
-			toast.error('Please enter item overall threshold');
-			return;
-		}
-		if (itemDetails.weeklyThreshold.trim() === '') {
-			toast.error('Please enter item weekly threshold');
+		if (!validateItemDetails()) {
 			return;
 		}
 
@@ -248,6 +243,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="text"
 									placeholder="Name"
 									value={itemDetails.name}
@@ -271,6 +267,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="text"
 									placeholder="Item Description"
 									multiline
@@ -291,15 +288,11 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 									justifyContent: 'space-between',
 									alignTtems: 'baseline',
 								}}>
-								<InputLabel
-									sx={{ marginRight: '10%' }}
-									id="item-select-autowidth-label">
+								<InputLabel sx={{ marginRight: '10%' }}>
 									Item Category
 								</InputLabel>
 
 								<Select
-									labelId="item-select-autowidth-label"
-									id="branch-select-autowidth"
 									sx={{ width: '65%' }}
 									value={itemDetails.category}
 									onChange={(e: {
@@ -311,8 +304,12 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 										);
 									}}
 									autoWidth
-									label="Category"
 									size="small">
+									<MenuItem
+										key="select-category-default-key"
+										value="Select Category">
+										Select Category
+									</MenuItem>
 									{categories.map((category) => (
 										<MenuItem
 											key={category.id}
@@ -321,10 +318,6 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 										</MenuItem>
 									))}
 								</Select>
-
-								{/* <InputLabel id="branch-select-autowidth-label">
-										Role
-									</InputLabel> */}
 							</Box>
 
 							<Box sx={{ textAlign: 'end' }}>
@@ -384,6 +377,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="number"
 									placeholder="Overall Threshold"
 									value={itemDetails.overallThreshold}
@@ -407,6 +401,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="number"
 									placeholder="Weekly Threshold"
 									value={itemDetails.weeklyThreshold}
@@ -430,7 +425,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 						}}>
 						<Button
 							variant="outlined"
-							size="medium"
+							size="large"
 							onClick={handleClose}>
 							Cancel
 						</Button>
@@ -438,7 +433,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 						{toBeEditedItemDetails.id !== '' ? (
 							<Button
 								variant="contained"
-								size="medium"
+								size="large"
 								onClick={() => {
 									void handleUpdateItem();
 								}}>

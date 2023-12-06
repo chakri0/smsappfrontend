@@ -21,11 +21,12 @@ import { logout } from '../Services/Reducers/UserReducer';
 // Assets
 import phillyLogo from '../Assets/Images/Phillys_Logo.png';
 import DashboardIcon from '../Assets/Icons/DashboardIcon';
-import ManageItemsIcon from '../Assets/Icons/ManageItems';
+import ManageInventory from '../Assets/Icons/ManageInventory';
 import InviteUserIcon from '../Assets/Icons/InviteUserIcon';
 import ProfileIcon from '../Assets/Icons/ProfileIcon';
 import BranchIcon from '../Assets/Icons/BranchIcon';
 import LogoutIcon from '../Assets/Icons/LogoutIcon';
+import ManageItem from '../Assets/Icons/ManageItem';
 
 interface SidebarRoutesDetails {
 	name: string;
@@ -39,8 +40,13 @@ const sideBarMenuItems: SidebarRoutesDetails[] = [
 		route: '/',
 	},
 	{
+		name: 'Manage Inventory',
+		icon: <ManageInventory />,
+		route: '/manage-inventory',
+	},
+	{
 		name: 'Manage Items',
-		icon: <ManageItemsIcon />,
+		icon: <ManageItem />,
 		route: '/manage-item',
 	},
 	{
@@ -135,6 +141,10 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
 									mr: open ? 3 : 'auto',
 									justifyContent: 'center',
 									stroke:
+										sidebarItem.route === pathname
+											? '#DC442E'
+											: '#5C5C5C',
+									color:
 										sidebarItem.route === pathname
 											? '#DC442E'
 											: '#5C5C5C',

@@ -96,7 +96,7 @@ const ManageBranch = (): React.JSX.Element => {
 							<Container className="right-menu-items">
 								<Button
 									variant="contained"
-									size="small"
+									size="large"
 									onClick={handleOpen}>
 									Add Branch
 								</Button>
@@ -116,7 +116,11 @@ const ManageBranch = (): React.JSX.Element => {
 							}}>
 							<CardMedia
 								component="img"
-								sx={{ width: 200 }}
+								sx={{
+									width: 200,
+									height: 130,
+									objectFit: 'fill',
+								}}
 								image={branch.image ?? phillysLogo}
 								alt={'Branch image'}
 							/>
@@ -150,6 +154,9 @@ const ManageBranch = (): React.JSX.Element => {
 								sx={{
 									display: 'flex',
 									flexDirection: 'column',
+									alignSelf: 'center',
+									marginLeft: 'auto',
+									gap: '10px',
 								}}>
 								<Button
 									size="small"

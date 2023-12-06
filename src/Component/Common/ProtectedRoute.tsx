@@ -1,15 +1,15 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAppSelector } from '../../Hooks/reduxHooks';
+// import { useAppSelector } from '../../Hooks/reduxHooks';
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-	const { user } = useAppSelector((state) => state.user);
+	const getUser = localStorage.getItem('PhillyUser');
 
-	if (user === null) {
+	if (getUser === null) {
 		return <Navigate to="/login" replace />;
 	}
 

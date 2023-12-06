@@ -8,6 +8,7 @@ import ForgotPassword from '../Pages/Forgot Password';
 import ResetPassword from '../Pages/Reset Password';
 import InviteUser from '../Pages/InviteUser';
 import ManageItems from '../Pages/ManageItem';
+import InvetoryItem from '../Pages/InventoryItem';
 import ProfileSettings from '../Pages/Profile';
 import ManageBranch from '../Pages/ManageBranch';
 import AccountSetup from '../Pages/Setup';
@@ -45,7 +46,7 @@ const Router = (): React.JSX.Element => {
 					// Component={ResetPassword}
 				/>
 				<Route
-					path="/accountSetup"
+					path="/account-setup"
 					element={
 						<GuestRoute>
 							<AccountSetup />
@@ -93,7 +94,15 @@ const Router = (): React.JSX.Element => {
 							</ProtectedRoute>
 						}
 					/>
-					{/* ś<Route path="/profile" Component={ProfileSettings} /> */}
+					<Route
+						path="/manage-inventory"
+						element={
+							<ProtectedRoute>
+								<InvetoryItem />
+							</ProtectedRoute>
+						}
+					/>
+					{/* <Route path="/profile" Component={ProfileSettings} /> */}
 					<Route
 						path="/manage-branch"
 						element={

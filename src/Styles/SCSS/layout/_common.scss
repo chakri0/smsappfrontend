@@ -1,3 +1,14 @@
-body {
-	background-color: #ededed;
+.MuiOutlinedInput-root textarea {
+	border-radius: 0;
+}
+
+.AdvertBadge {
+	.MuiBadge-badge {
+		.MuiSvgIcon-root {
+			font-size: 31px;
+			position: relative;
+			right: 11px;
+			bottom: 5px;
+		}
+	}
 }

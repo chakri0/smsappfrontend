@@ -7,16 +7,23 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 
 // Hooks
 import { useAppDispatch, useAppSelector } from '../../Hooks/reduxHooks';
 
 // Reducer
-import { getBranchesUser } from '../../Services/Reducers/UserReducer';
+import {
+	getBranchesUser,
+	removeUser,
+} from '../../Services/Reducers/UserReducer';
+import { type ListUserByBranchResponse } from '../../Services/APIs/UserAPI';
 
 // Component
 import Loader from '../../Layout/Loader';
+import UpdateUser from './InviteUserModal';
+import { isAPIActionRejected } from 'src/Utils/helper';
+import { toast } from 'react-toastify';
 
 interface Column {
 	id: 'firstName' | 'lastName' | 'email' | 'role' | 'branch' | 'action';
@@ -48,6 +55,10 @@ export default function StickyHeadTable(props: TableProps): React.JSX.Element {
 
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(10);
+	const [openEditModal, setOpenEditModal] = React.useState(false);
+	const [tobeEditedUserDetails, setTobeEditedUserDetails] = React.useState({
+		id: '',
+	});
 
 	useEffect(() => {
 		if (branchId !== '') {
@@ -68,6 +79,25 @@ export default function StickyHeadTable(props: TableProps): React.JSX.Element {
 	): void => {
 		setRowsPerPage(+event.target.value);
 		setPage(0);
+	};
+
+	const handleEditModalOpen = (row: ListUserByBranchResponse): void => {
+		setTobeEditedUserDetails(row);
+		setOpenEditModal(true);
+	};
+	const handleEditModalClose = (): void => {
+		setOpenEditModal(false);
+		setTobeEditedUserDetails({ id: '' });
+	};
+
+	const handleDeleteUser = async (
+		row: ListUserByBranchResponse,
+	): Promise<void> => {
+		const result = await dispatch(removeUser(row.id));
+		if (!isAPIActionRejected(result.type)) {
+			toast.success('User Removed Successfully');
+			await dispatch(getBranchesUser(branchId));
+		}
 	};
 
 	return (
@@ -121,10 +151,6 @@ export default function StickyHeadTable(props: TableProps): React.JSX.Element {
 														const branchName =
 															row.branch
 																.storeName;
-														console.log(
-															'value',
-															row[column.id],
-														);
 														return (
 															<TableCell
 																key={column.id}
@@ -132,12 +158,34 @@ export default function StickyHeadTable(props: TableProps): React.JSX.Element {
 																	column.align
 																}>
 																{column.id ===
-																'role'
-																	? roleName
-																	: column.id ===
-																	  'branch'
-																	? branchName
-																	: value?.toString()}
+																'role' ? (
+																	roleName
+																) : column.id ===
+																  'branch' ? (
+																	branchName
+																) : column.id ===
+																  'action' ? (
+																	<>
+																		<Button
+																			onClick={() => {
+																				handleEditModalOpen(
+																					row,
+																				);
+																			}}>
+																			Edit
+																		</Button>
+																		<Button
+																			onClick={() => {
+																				void handleDeleteUser(
+																					row,
+																				);
+																			}}>
+																			Delete
+																		</Button>
+																	</>
+																) : (
+																	value?.toString()
+																)}
 															</TableCell>
 														);
 													})}
@@ -161,6 +209,11 @@ export default function StickyHeadTable(props: TableProps): React.JSX.Element {
 					<Typography>No Users found for this branch</Typography>
 				)}
 			</Paper>
+			<UpdateUser
+				open={openEditModal}
+				handleClose={handleEditModalClose}
+				toBeEditedUserDetails={tobeEditedUserDetails}
+			/>
 		</>
 	);
 }

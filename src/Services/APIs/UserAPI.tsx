@@ -30,12 +30,20 @@ export interface UserRoleResponse {
 }
 
 export interface UpdateRequest {
-	firstName: string;
+	firstName?: string;
 	lastName?: string;
 	email: string;
 	phoneNumber?: number;
 	oldPassword?: string;
 	newPassword?: string;
+	avatar?: string | null;
+}
+
+export interface UpdateUserRequest {
+	userId: string;
+	firstName: string;
+	role: string;
+	branch: string;
 }
 
 export interface ListUserByBranchResponse {
@@ -49,6 +57,39 @@ export interface ListUserByBranchResponse {
 	branch: ListBranchesResponse;
 	action?: string;
 }
+
+interface UserProfileResponse {
+	user: {
+		id: string;
+		email: string;
+		firstName?: string;
+		lastName?: string;
+		avatar?: string;
+		phoneNumber?: number;
+		role: UserRoleResponse;
+		branch?: ListBranchesResponse;
+	};
+}
+const formatProfileResponse = (user: UserProfileResponse): User => {
+	const formattedUser: User = {
+		id: user.user.id,
+		email: user.user.email,
+		firstName: user.user.firstName,
+		lastName: user.user.lastName,
+		avatar: user.user.avatar,
+		phoneNumber: user.user.phoneNumber,
+		role: user.user.role,
+		branch: user.user.branch,
+	};
+	return formattedUser;
+};
+
+export interface ResetPasswordRequest {
+	email: string;
+	password: string;
+	token: string;
+}
+
 const baseAPIURL = process.env.API_URL;
 
 export const login = async (data: LoginRequest): Promise<string> => {
@@ -121,9 +162,7 @@ export const setup = async (data: SetupRequest): Promise<string> => {
 	return await response;
 };
 
-export const updateUserProfile = async (
-	data: UpdateRequest,
-): Promise<string> => {
+export const updateMyProfile = async (data: UpdateRequest): Promise<string> => {
 	const AuthHeader = {
 		headers: {
 			Authorization: `${getAccessToken()}`,
@@ -148,8 +187,77 @@ export const userProfile = async (): Promise<User> => {
 		},
 	};
 
-	const response = axios
+	const user = axios
 		.get(`${baseAPIURL}/user/me`, AuthHeader)
+		.then(function (response) {
+			return response.data;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return formatProfileResponse(await user);
+};
+
+export const forgotPassword = async (email: string): Promise<string> => {
+	const data = { email };
+	const response = axios
+		.post(`${baseAPIURL}/user/forgotPassword`, data)
+		.then(function (response) {
+			return response.data;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return await response;
+};
+
+export const resetPassword = async (
+	data: ResetPasswordRequest,
+): Promise<string> => {
+	const response = axios
+		.post(`${baseAPIURL}/user/resetPassword`, data)
+		.then(function (response) {
+			return response.data;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return await response;
+};
+
+export const updateUserProfile = async (
+	data: UpdateUserRequest,
+): Promise<boolean> => {
+	const AuthHeader = {
+		headers: {
+			Authorization: `${getAccessToken()}`,
+		},
+	};
+
+	const response = axios
+		.put(`${baseAPIURL}/user/updateUser`, data, AuthHeader)
+		.then(function (response) {
+			return response.data;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return await response;
+};
+
+export const deleteUser = async (userId: string): Promise<boolean> => {
+	const AuthHeader = {
+		headers: {
+			Authorization: `${getAccessToken()}`,
+		},
+	};
+
+	const response = axios
+		.delete(`${baseAPIURL}/user/deleteUser/${userId}`, AuthHeader)
 		.then(function (response) {
 			return response.data;
 		})

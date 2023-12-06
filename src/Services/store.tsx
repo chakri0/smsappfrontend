@@ -3,6 +3,7 @@ import userReducer from '../Services/Reducers/UserReducer';
 import BranchReducer from './Reducers/BranchReducer';
 import CategoryReducer from './Reducers/CategoryReducer';
 import ItemReducer from './Reducers/ItemReducer';
+import InventoryItemReducer from './Reducers/InventoryItemReducer';
 
 const store = configureStore({
 	reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
 		branch: BranchReducer,
 		category: CategoryReducer,
 		item: ItemReducer,
+		inventoryItem: InventoryItemReducer,
 	},
 });
 

@@ -34,7 +34,7 @@ const CommonLayout = ({ children }: CommonLayoutProps): React.JSX.Element => {
 					sx={{
 						flexGrow: 1,
 						p: 3,
-						marginLeft: open ? '260px' : '50px',
+						marginLeft: open ? '260px' : '77px',
 						marginTop: '50px',
 					}}>
 					{children}

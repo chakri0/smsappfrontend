@@ -12,3 +12,9 @@ export function getAccessToken(): string {
 	}
 	return '';
 }
+
+export function checkNullUndefiend(
+	data: string | number | null | undefined,
+): boolean {
+	return data === null || data === undefined || data === '';
+}

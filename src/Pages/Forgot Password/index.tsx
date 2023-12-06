@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -6,14 +6,38 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import BackArrow from '../../Assets/Icons/BackArrow';
+import { isEmailValid } from '../Login';
+import { useAppDispatch } from '../../Hooks/reduxHooks';
+import { forgotUserPassword } from 'src/Services/Reducers/UserReducer';
+import { isAPIActionRejected } from 'src/Utils/helper';
 
 const ForgotPassword = (): React.JSX.Element => {
 	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
 	const defaultTheme = createTheme();
+	const [email, setemail] = useState('');
 
-	const handleSubmit = (): void => {};
+	const handleSubmit = async (): Promise<void> => {
+		if (email === '') {
+			toast.error('Please fill in all fields');
+			return;
+		}
+		if (!isEmailValid(email)) {
+			toast.error('Please enter a valid email address');
+			return;
+		}
+
+		const result = await dispatch(forgotUserPassword(email));
+		if (!isAPIActionRejected(result.type)) {
+			toast.success(
+				'Reset Password mail sent successfully. Please check your mail',
+			);
+			navigate('/login');
+		}
+	};
 
 	return (
 		<ThemeProvider theme={defaultTheme}>
@@ -38,12 +62,14 @@ const ForgotPassword = (): React.JSX.Element => {
 					</Typography>
 					<Box
 						component="form"
-						onSubmit={handleSubmit}
-						noValidate
+						// noValidate
+						// onSubmit={() => {
+						// 	void handleSubmit();
+						// }}
 						sx={{ mt: 1 }}>
 						<TextField
 							margin="normal"
-							required
+							// required
 							fullWidth
 							id="email"
 							placeholder="Email"
@@ -65,18 +91,18 @@ const ForgotPassword = (): React.JSX.Element => {
 									borderColor: '#FF6347',
 								},
 							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
+							onChange={(e) => {
+								setemail(e.target.value);
 							}}
 						/>
 
 						<Button
-							type="submit"
+							// type="submit"
 							fullWidth
 							variant="contained"
+							onClick={() => {
+								void handleSubmit();
+							}}
 							sx={{
 								mt: 3,
 								mb: 2,

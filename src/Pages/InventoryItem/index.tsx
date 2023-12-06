@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { Button, Container, Grid, Typography } from '@mui/material';
-import AddItem from './AddItemModal';
-import ItemTable from './ItemTable';
+import AddInventoryItem from './AddInventoryItem';
+import InventoryItemTable from './InventoryItemTable';
 
-const tobeEditItem = { id: '' };
+const tobeEditItem = null;
 
-const ManageItems = (): React.JSX.Element => {
+const InvetoryItem = (): React.JSX.Element => {
 	const [openItemModal, setOpenItemModal] = useState(false);
 
 	const handleOpen = (): void => {
@@ -23,7 +23,9 @@ const ManageItems = (): React.JSX.Element => {
 				<Stack spacing={2}>
 					<Grid container spacing={2}>
 						<Grid item xs={12} md={4}>
-							<Typography variant="h4">Manage Items</Typography>
+							<Typography variant="h4">
+								Manage Inventory
+							</Typography>
 						</Grid>
 						<Grid item xs={12} md={8}>
 							<Container className="right-menu-items">
@@ -31,7 +33,7 @@ const ManageItems = (): React.JSX.Element => {
 									variant="contained"
 									size="large"
 									onClick={handleOpen}>
-									Add Item
+									Add Inventory Item
 								</Button>
 							</Container>
 						</Grid>
@@ -39,11 +41,11 @@ const ManageItems = (): React.JSX.Element => {
 				</Stack>
 
 				<Stack spacing={2} sx={{ mt: 3 }}>
-					<ItemTable />
+					<InventoryItemTable />
 				</Stack>
 			</Box>
 
-			<AddItem
+			<AddInventoryItem
 				open={openItemModal}
 				handleClose={handleClose}
 				toBeEditedItemDetails={tobeEditItem}
@@ -52,4 +54,4 @@ const ManageItems = (): React.JSX.Element => {
 	);
 };
 
-export default ManageItems;
+export default InvetoryItem;

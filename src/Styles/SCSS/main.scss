@@ -1,6 +1,9 @@
 // General
 @import './general/mixins';
 
+// Common
+@import './layout/common';
+
 // Pages
 @import './pages/dashboard.scss';
 @import './pages//inviteUser.scss';

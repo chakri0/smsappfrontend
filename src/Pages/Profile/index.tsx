@@ -1,10 +1,19 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import React, { useEffect, useState } from 'react';
+import React, { type ChangeEvent, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { Button, Divider, Grid, TextField, Typography } from '@mui/material';
+import {
+	Button,
+	Divider,
+	Grid,
+	TextField,
+	Typography,
+	IconButton,
+	Badge,
+	Avatar,
+} from '@mui/material';
 
 // Assets
 import userProfileImage from '../../Assets/Images/userProfile.svg';
@@ -15,9 +24,12 @@ import { updateProfile } from '../../Services/Reducers/UserReducer';
 
 // Utils
 import { isAPIActionRejected } from '../../Utils/helper';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { uploadFile } from '../../Services/APIs/AwsService';
+import { useAppSelector } from '../../Hooks/reduxHooks';
 
 interface ProfileDetails {
-	firstName: string;
+	firstName?: string;
 	lastName?: string;
 	email: string;
 	phoneNumber?: number;
@@ -30,25 +42,30 @@ interface ProfileDetails {
 
 const ProfileSettings = (): React.JSX.Element => {
 	const dispatch = useDispatch<AppDispatch>();
+	const { user } = useAppSelector((state) => state.user);
+	console.log(user);
+
 	const [userProfileDetails, setUserProfileDetails] =
 		useState<ProfileDetails>();
+	const [avatarUrl, setAvatarUrl] = useState('');
 
 	useEffect(() => {
-		const storedUserInfo: string | null =
-			localStorage.getItem('PhillyUser');
-		if (storedUserInfo != null) {
-			const userInfo = JSON.parse(storedUserInfo);
+		// const storedUserInfo: string | null =
+		//	localStorage.getItem('PhillyUser');
+		if (user != null) {
+			// const userInfo = JSON.parse(storedUserInfo);
 			const formattedUserDetails: ProfileDetails = {
-				firstName: userInfo.user.user.firstName,
-				lastName: userInfo.user.user.lastName ?? '',
-				email: userInfo.user.user.email,
-				phoneNumber: userInfo.user.user.phoneNumber,
-				role: userInfo.user.user.role.roleName,
-				branch: userInfo.user.user.branch?.storeName ?? '',
+				firstName: user.firstName,
+				lastName: user.lastName ?? '',
+				email: user.email,
+				phoneNumber: user.phoneNumber,
+				role: user.role.roleName,
+				branch: user.branch?.storeName ?? '',
 			};
 			setUserProfileDetails(formattedUserDetails);
+			setAvatarUrl(user?.avatar ?? '');
 		}
-	}, []);
+	}, [user]);
 
 	const handleInputChange = (field: string, value: string): void => {
 		setUserProfileDetails((prevData: ProfileDetails) => ({
@@ -76,12 +93,35 @@ const ProfileSettings = (): React.JSX.Element => {
 				phoneNumber: userProfileDetails.phoneNumber,
 				oldPassword: userProfileDetails.oldPassword,
 				newPassword: userProfileDetails.newPassword,
+				avatar: avatarUrl ?? null,
 			};
 
 			const result = await dispatch(updateProfile(requestBody));
 			if (!isAPIActionRejected(result.type)) {
 				toast.success('User profile updated successful');
 			}
+		}
+	};
+
+	const newFileName = (name: string): string =>
+		`${new Date().getTime()}.${name.split('.').pop()}`;
+
+	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+	const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+		try {
+			const file = event.target.files?.[0];
+			if (file == null || file === undefined) return;
+			const fileName = file.name;
+			const fileType = file.type;
+			const blob = file.slice(0, file.size, fileType);
+			const newFile = new File([blob], newFileName(fileName), {
+				type: fileType,
+			});
+
+			const awsResponse = await uploadFile(newFile);
+			setAvatarUrl(awsResponse.location);
+		} catch (error) {
+			console.log(error, 'error');
 		}
 	};
 
@@ -97,12 +137,38 @@ const ProfileSettings = (): React.JSX.Element => {
 						</Grid>
 					</Grid>
 				</Stack>
-
 				<Stack spacing={2} sx={{ m: 3 }}>
-					<Box>
-						<img height={80} width={80} src={userProfileImage} />
-					</Box>
-
+					<IconButton
+						color="primary"
+						className="AvatarIcon"
+						style={{ width: '80px', height: '80px' }}>
+						<input
+							type="file"
+							className="InputAvatar"
+							accept=".jpg,.jpeg,.png"
+							hidden
+							onChange={handleFileUpload}
+							id="avatar-upload-input"
+						/>
+						<label htmlFor="avatar-upload-input">
+							<Badge
+								anchorOrigin={{
+									vertical: 'bottom',
+									horizontal: 'right',
+								}}
+								className="AdvertBadge"
+								badgeContent={
+									<AddCircleIcon color="primary" />
+								}>
+								<Avatar
+									className="AvatarImage"
+									alt="Profile"
+									src={avatarUrl ?? userProfileImage}
+									style={{ width: '80px', height: '80px' }}
+								/>
+							</Badge>
+						</label>
+					</IconButton>
 					<Box
 						sx={{
 							display: 'flex',

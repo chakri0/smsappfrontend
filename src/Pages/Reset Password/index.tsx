@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -6,12 +7,69 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { resetUserPassword } from 'src/Services/Reducers/UserReducer';
+import { isAPIActionRejected } from 'src/Utils/helper';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { type AppDispatch } from '../../Services/store';
+import { isPasswordValid } from '../Setup';
 
 const ResetPassword = (): React.JSX.Element => {
 	// TODO remove, this demo shouldn't need to reset the theme.
 	const defaultTheme = createTheme();
+	const navigate = useNavigate();
+	const dispatch = useDispatch<AppDispatch>();
+	const location = useLocation();
+	const searchParams = new URLSearchParams(location.search);
+	const userEmail = searchParams.get('email');
+	const token = searchParams.get('token');
 
-	const handleSubmit = (): void => {};
+	const [formData, setFormData] = useState({
+		password: '',
+		confirmPassword: '',
+	});
+
+	const handleChange = (e: {
+		target: { name: string; value: string };
+	}): void => {
+		const { name, value } = e.target;
+		setFormData({ ...formData, [name]: value });
+	};
+	const handleSubmit = async (
+		e: React.FormEvent<HTMLFormElement>,
+	): Promise<void> => {
+		e.preventDefault();
+		const { password, confirmPassword } = formData;
+
+		if (password === '') {
+			toast.error('Please enter password');
+			return;
+		}
+
+		if (!isPasswordValid(password)) {
+			toast.error(
+				'Password must be at least 8 characters and contain at least one uppercase, one lowercase, one number, and one special character',
+			);
+			return;
+		}
+		if (password.trim() !== confirmPassword.trim()) {
+			toast.error('Password does not match');
+			return;
+		}
+		if (token != null && userEmail !== null) {
+			const requestBody = {
+				email: userEmail,
+				password,
+				token,
+			};
+
+			const result = await dispatch(resetUserPassword(requestBody));
+			if (!isAPIActionRejected(result.type)) {
+				toast.success('Password reset successful');
+				navigate('/login');
+			}
+		}
+	};
 
 	return (
 		<ThemeProvider theme={defaultTheme}>
@@ -36,7 +94,9 @@ const ResetPassword = (): React.JSX.Element => {
 					</Typography>
 					<Box
 						component="form"
-						onSubmit={handleSubmit}
+						onSubmit={(e) => {
+							void handleSubmit(e);
+						}}
 						noValidate
 						sx={{ mt: 1 }}>
 						<TextField
@@ -48,59 +108,21 @@ const ResetPassword = (): React.JSX.Element => {
 							id="password"
 							placeholder="Password"
 							autoComplete="current-password"
-							sx={{
-								backgroundColor: '#ededed',
-								borderRadius: '31.5px',
-								'& .MuiOutlinedInput-root': {
-									border: 'none',
-									borderRadius: '30px',
-								},
-								'& .MuiInput-underline:after': {
-									borderBottom: 'none',
-									borderColor: '#FF6347',
-								},
-								'& .MuiInputBase-input:focus': {
-									borderColor: '#FF6347',
-								},
-							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
-							}}
+							value={formData.password}
+							onChange={handleChange}
 						/>
 
 						<TextField
 							margin="normal"
 							required
 							fullWidth
-							name="confirm-password"
-							type="password"
+							name="confirmPassword"
+							type="confirmPassword"
 							id="password"
 							placeholder="Confirm Password"
 							autoComplete="current-password"
-							sx={{
-								backgroundColor: '#ededed',
-								borderRadius: '31.5px',
-								'& .MuiOutlinedInput-root': {
-									border: 'none',
-									borderRadius: '30px',
-								},
-								'& .MuiInput-underline:after': {
-									borderBottom: 'none',
-									borderColor: '#FF6347',
-								},
-								'& .MuiInputBase-input:focus': {
-									borderColor: '#FF6347',
-								},
-							}}
-							inputProps={{
-								sx: {
-									color: '#5c5c5c',
-									marginLeft: '10px',
-								},
-							}}
+							value={formData.confirmPassword}
+							onChange={handleChange}
 						/>
 
 						<Button

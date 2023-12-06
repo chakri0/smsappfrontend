@@ -202,7 +202,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 						/>
 					</>
 				) : (
-					<Typography>No Users found for this branch</Typography>
+					<Typography>No Item found</Typography>
 				)}
 			</Paper>
 

@@ -1,17 +1,23 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-	type LoginRequest,
 	login,
 	listByBranch,
-	type ListUserByBranchResponse,
 	invite,
-	type InviteRequest,
 	setup,
+	userProfile,
+	updateMyProfile,
+	forgotPassword,
+	resetPassword,
+	updateUserProfile,
+	type LoginRequest,
+	type ListUserByBranchResponse,
+	type InviteRequest,
 	type SetupRequest,
 	type UpdateRequest,
-	updateUserProfile,
-	userProfile,
 	type UserRoleResponse,
+	type UpdateUserRequest,
+	type ResetPasswordRequest,
+	deleteUser,
 } from '../APIs/UserAPI';
 import { type ListBranchesResponse } from '../APIs/BranchAPI';
 
@@ -23,7 +29,7 @@ export interface User {
 	avatar: string | undefined;
 	phoneNumber: number | undefined;
 	role: UserRoleResponse;
-	branch: ListBranchesResponse;
+	branch?: ListBranchesResponse;
 }
 
 export interface UserState {
@@ -75,7 +81,23 @@ export const setupAccount = createAsyncThunk(
 export const updateProfile = createAsyncThunk(
 	'updateProfile/state',
 	async (data: UpdateRequest) => {
+		const response = await updateMyProfile(data);
+		return response;
+	},
+);
+
+export const updateUser = createAsyncThunk(
+	'updateUser/state',
+	async (data: UpdateUserRequest) => {
 		const response = await updateUserProfile(data);
+		return response;
+	},
+);
+
+export const removeUser = createAsyncThunk(
+	'removeUser/state',
+	async (userId: string) => {
+		const response = await deleteUser(userId);
 		return response;
 	},
 );
@@ -84,6 +106,22 @@ export const profile = createAsyncThunk('profile/status', async () => {
 	const response = await userProfile();
 	return response;
 });
+
+export const forgotUserPassword = createAsyncThunk(
+	'user/forgortPassword',
+	async (email: string) => {
+		const response = await forgotPassword(email);
+		return response;
+	},
+);
+
+export const resetUserPassword = createAsyncThunk(
+	'user/resetPassword',
+	async (data: ResetPasswordRequest) => {
+		const response = await resetPassword(data);
+		return response;
+	},
+);
 
 export const createUserSlice = createSlice({
 	name: 'user',
@@ -141,7 +179,7 @@ export const createUserSlice = createSlice({
 			state.loading = false;
 		});
 
-		// Update User Profile
+		// Update My Profile
 		builder.addCase(updateProfile.pending, (state, action) => {
 			state.loading = true;
 		});
@@ -149,6 +187,28 @@ export const createUserSlice = createSlice({
 			state.loading = false;
 		});
 		builder.addCase(updateProfile.rejected, (state, action) => {
+			state.loading = false;
+		});
+
+		// Update User Profile
+		builder.addCase(updateUser.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(updateUser.fulfilled, (state, action) => {
+			state.loading = false;
+		});
+		builder.addCase(updateUser.rejected, (state, action) => {
+			state.loading = false;
+		});
+
+		// Remove User
+		builder.addCase(removeUser.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(removeUser.fulfilled, (state, action) => {
+			state.loading = false;
+		});
+		builder.addCase(removeUser.rejected, (state, action) => {
 			state.loading = false;
 		});
 
@@ -161,6 +221,28 @@ export const createUserSlice = createSlice({
 			state.loading = false;
 		});
 		builder.addCase(profile.rejected, (state, action) => {
+			state.loading = false;
+		});
+
+		// Forgot Password
+		builder.addCase(forgotUserPassword.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(forgotUserPassword.fulfilled, (state, action) => {
+			state.loading = false;
+		});
+		builder.addCase(forgotUserPassword.rejected, (state, action) => {
+			state.loading = false;
+		});
+
+		// Reset Password
+		builder.addCase(resetUserPassword.pending, (state, action) => {
+			state.loading = true;
+		});
+		builder.addCase(resetUserPassword.fulfilled, (state, action) => {
+			state.loading = false;
+		});
+		builder.addCase(resetUserPassword.rejected, (state, action) => {
 			state.loading = false;
 		});
 	},
