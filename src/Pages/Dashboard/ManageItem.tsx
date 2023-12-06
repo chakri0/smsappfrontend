@@ -8,9 +8,16 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { Typography } from '@mui/material';
+import { useAppSelector } from '../../Hooks/reduxHooks';
 
 interface Column {
-	id: 'item' | 'category' | 'weeklyThreshold' | 'overallThreshold' | 'action';
+	id:
+		| 'itemName'
+		| 'category'
+		| 'weeklyThreshold'
+		| 'overallThreshold'
+		| 'dailyThreshold'
+		| 'dailyConsumption';
 	label: string;
 	minWidth?: number;
 	align?: 'right';
@@ -18,44 +25,16 @@ interface Column {
 }
 
 const columns: readonly Column[] = [
-	{ id: 'item', label: 'Item', minWidth: 170 },
-	{ id: 'category', label: 'Category', minWidth: 100 },
-	{ id: 'weeklyThreshold', label: 'Weekly Threshold', minWidth: 100 },
-	{ id: 'overallThreshold', label: 'Overall Threshold', minWidth: 100 },
-	{ id: 'action', label: 'Action', minWidth: 100 },
-];
-
-interface Data {
-	item: string;
-	category: string;
-	weeklyThreshold: number | null;
-	overallThreshold: number | null;
-	action: string;
-}
-
-function createData(
-	item: string,
-	category: string,
-	weeklyThreshold: number | null,
-	overallThreshold: number | null,
-	action: string,
-): Data {
-	return { item, category, weeklyThreshold, overallThreshold, action };
-}
-
-const rows = [
-	createData('Macaroni Pizza', 'Pizza', 40, 20, 'Update'),
-	createData('Coke', 'Beverage', 2, 50, 'Update'),
-	createData('Bun', 'Bakery', 5, 100, 'Update'),
-	createData('Caesar Salad', 'Salad', 8, 30, 'Update'),
-	createData('Spaghetti Bolognese', 'Pasta', 12, 25, 'Update'),
-	createData('Chicken Burger', 'Burger', 6, 40, 'Update'),
-	createData('French Fries', 'Appetizer', 4, 60, 'Update'),
-	createData('Coffee', 'Beverage', 3, 45, 'Update'),
-	createData('Vanilla Ice Cream', 'Dessert', 7, 15, 'Update'),
+	{ id: 'itemName', label: 'Item', minWidth: 100 },
+	{ id: 'category', label: 'Category', minWidth: 80 },
+	{ id: 'dailyConsumption', label: 'Daily Consumption', minWidth: 60 },
+	{ id: 'dailyThreshold', label: 'Daily Threshold', minWidth: 60 },
+	{ id: 'weeklyThreshold', label: 'Weekly Threshold', minWidth: 60 },
+	{ id: 'overallThreshold', label: 'Overall Threshold', minWidth: 60 },
 ];
 
 export default function StickyHeadTable(): React.JSX.Element {
+	const { dasboardDetails } = useAppSelector((state) => state.dashboard);
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -72,12 +51,16 @@ export default function StickyHeadTable(): React.JSX.Element {
 
 	return (
 		<>
-			<Typography variant="h3" component="h3">
+			<Typography
+				component="h2"
+				variant="h6"
+				color="primary"
+				gutterBottom>
 				Manage Item
 			</Typography>
 
 			<Paper sx={{ width: '100%', overflow: 'hidden' }}>
-				<TableContainer sx={{ maxHeight: 440 }}>
+				<TableContainer sx={{ maxHeight: 310 }}>
 					<Table stickyHeader aria-label="sticky table">
 						<TableHead>
 							<TableRow>
@@ -92,7 +75,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{rows
+							{dasboardDetails.itemsWithTotalStock
 								.slice(
 									page * rowsPerPage,
 									page * rowsPerPage + rowsPerPage,
@@ -103,7 +86,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 											hover
 											role="checkbox"
 											tabIndex={-1}
-											key={`item-${index}-${row.item}`}>
+											key={`item-${index}-${row.itemName}`}>
 											{columns.map((column) => {
 												const value = row[column.id];
 												return (
@@ -130,7 +113,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 				<TablePagination
 					rowsPerPageOptions={[10, 25, 100]}
 					component="div"
-					count={rows.length}
+					count={dasboardDetails.itemsWithTotalStock.length}
 					rowsPerPage={rowsPerPage}
 					page={page}
 					onPageChange={handleChangePage}

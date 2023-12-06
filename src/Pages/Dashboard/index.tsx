@@ -5,13 +5,17 @@ import Typography from '@mui/material/Typography';
 import { Container, Grid, Paper } from '@mui/material';
 import { Copyright } from '@mui/icons-material';
 import ItemsCharts from './chart';
+import ManageItems from './ManageItem';
 
 // Hooks
-import { useAppSelector } from '../../Hooks/reduxHooks';
+import { useAppDispatch, useAppSelector } from '../../Hooks/reduxHooks';
+import { fetcDeshboardDetails } from '../../Services/Reducers/DashnoardReducer';
 
 const Dashboard = (): React.JSX.Element => {
 	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
 	const { user } = useAppSelector((state) => state.user);
+	const { dasboardDetails } = useAppSelector((state) => state.dashboard);
 
 	useEffect(() => {
 		const storedUserInfo: string | null =
@@ -25,6 +29,17 @@ const Dashboard = (): React.JSX.Element => {
 			navigate('/login');
 		}
 	}, [user, navigate]);
+
+	const getDashboardDetails = async (): Promise<void> => {
+		await dispatch(fetcDeshboardDetails());
+	};
+
+	useEffect(() => {
+		void getDashboardDetails();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	console.log(dasboardDetails, '/dasboardDetails');
 
 	return (
 		<>
@@ -60,10 +75,10 @@ const Dashboard = (): React.JSX.Element => {
 											variant="h6"
 											color="primary"
 											gutterBottom>
-											Quantity in hand
+											Total Items
 										</Typography>
 										<Typography component="p" variant="h4">
-											868
+											{dasboardDetails.totalItems.count}
 										</Typography>
 										{/* <Typography
 								color="text.secondary"
@@ -88,10 +103,13 @@ const Dashboard = (): React.JSX.Element => {
 											variant="h6"
 											color="primary"
 											gutterBottom>
-											Quantity received this month
+											Total Category
 										</Typography>
 										<Typography component="p" variant="h4">
-											200
+											{
+												dasboardDetails?.totalCategories
+													.count
+											}
 										</Typography>
 										{/* <Typography
 								color="text.secondary"
@@ -101,7 +119,14 @@ const Dashboard = (): React.JSX.Element => {
 									</React.Fragment>
 								</Paper>
 							</Grid>
-							{/* Recent Orders */}
+							<Grid
+								item
+								xs={12}
+								md={4}
+								lg={3}
+								style={{ maxWidth: '50%' }}>
+								<ManageItems />
+							</Grid>
 							<Grid item xs={12}>
 								<Paper
 									sx={{
@@ -109,6 +134,13 @@ const Dashboard = (): React.JSX.Element => {
 										display: 'flex',
 										flexDirection: 'column',
 									}}>
+									<Typography
+										component="h2"
+										variant="h6"
+										color="primary"
+										gutterBottom>
+										Items & Quantity & Health Score
+									</Typography>
 									{/* <Orders /> */}
 									<ItemsCharts />
 								</Paper>
