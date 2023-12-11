@@ -1,5 +1,7 @@
-// import axios from 'axios';
-// import { getAccessToken } from '../../Utils/helper';
+import axios from 'axios';
+import { getAccessToken } from '../../Utils/helper';
+
+const baseAPIURL = process.env.API_URL;
 
 export interface DashboardDetails {
 	totalItems: {
@@ -26,7 +28,7 @@ export interface DashboardResponse {
 	dasboardDetails: DashboardDetails;
 }
 
-const data: DashboardResponse = {
+/* const data: DashboardResponse = {
 	dasboardDetails: {
 		totalItems: {
 			count: '2',
@@ -77,22 +79,22 @@ const data: DashboardResponse = {
 			},
 		],
 	},
-};
+}; */
 
 export const getDeshboardDetails = async (): Promise<DashboardDetails> => {
-	// const AuthHeader = {
-	// 	headers: {
-	// 		Authorization: `${getAccessToken()}`,
-	// 	},
-	// };
-	// const response = axios
-	// 	.get(`${baseAPIURL}/inventory/item/list`, AuthHeader)
-	// 	.then(function (response) {
-	// 		return response.data.inventoryItemList;
-	// 	})
-	// 	.catch(function (error) {
-	// 		console.log(error);
-	// 		throw error;
-	// 	});
-	return data.dasboardDetails;
+	const AuthHeader = {
+		headers: {
+			Authorization: `${getAccessToken()}`,
+		},
+	};
+	const response = axios
+		.get(`${baseAPIURL}/dashboard/getDetails`, AuthHeader)
+		.then(function (response) {
+			return response.data.dasboardDetails;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return await response;
 };
