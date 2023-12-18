@@ -10,7 +10,51 @@ export interface DashboardDetails {
 	totalCategories: {
 		count: string;
 	};
+	totalQuantity: {
+		totalAvailableQuantity: string;
+	};
+	totalWastedItems: {
+		count: string;
+	};
+	recentOrders: StockItem[];
+	lowStocks: StockItem[];
 	itemsWithTotalStock: ItemWithTotalStock[];
+	wastedItemsList: wastedItem[];
+}
+
+interface StockItem {
+	id: string;
+	quantity: string;
+	availableQuantity: string;
+	status: string;
+	expireDate: string;
+	addedAt: string;
+	updatedAt: string;
+	item: StockItemItem;
+	branch: StockItemBranch;
+	addedBy: StockItemUser;
+}
+
+interface StockItemItem {
+	id: string;
+	name: string;
+}
+
+interface StockItemBranch {
+	id: string;
+	storeName: string;
+}
+
+interface StockItemUser {
+	id: string;
+	email: string;
+	firstName: string;
+	lastName: string | null;
+}
+
+interface wastedItem {
+	itemName: string;
+	wastedQuantity: string;
 }
 
 interface ItemWithTotalStock {
@@ -28,67 +72,16 @@ export interface DashboardResponse {
 	dasboardDetails: DashboardDetails;
 }
 
-/* const data: DashboardResponse = {
-	dasboardDetails: {
-		totalItems: {
-			count: '2',
-		},
-		totalCategories: {
-			count: '3',
-		},
-		itemsWithTotalStock: [
-			{
-				itemName: 'Coke',
-				availableQuantity: '10',
-				dailyConsumption: '0',
-				dailyThreshold: '10',
-				weeklyThreshold: '20',
-				overallThreshold: '30',
-				category: 'Beverages',
-				healthScore: 80,
-			},
-			{
-				itemName: 'Tomato Pizza',
-				availableQuantity: '27',
-				dailyConsumption: '13',
-				dailyThreshold: '10',
-				weeklyThreshold: '30',
-				overallThreshold: '20',
-				category: 'Pizza',
-				healthScore: 19.5,
-			},
-			{
-				itemName: 'Sprit',
-				availableQuantity: '10',
-				dailyConsumption: '0',
-				dailyThreshold: '10',
-				weeklyThreshold: '20',
-				overallThreshold: '30',
-				category: 'Beverages',
-				healthScore: 80,
-			},
-			{
-				itemName: 'Burgur',
-				availableQuantity: '27',
-				dailyConsumption: '13',
-				dailyThreshold: '10',
-				weeklyThreshold: '30',
-				overallThreshold: '20',
-				category: 'Pizza',
-				healthScore: 19.5,
-			},
-		],
-	},
-}; */
-
-export const getDeshboardDetails = async (): Promise<DashboardDetails> => {
+export const getDeshboardDetails = async (
+	branchId: string,
+): Promise<DashboardDetails> => {
 	const AuthHeader = {
 		headers: {
 			Authorization: `${getAccessToken()}`,
 		},
 	};
 	const response = axios
-		.get(`${baseAPIURL}/dashboard/getDetails`, AuthHeader)
+		.get(`${baseAPIURL}/dashboard/getDetails/${branchId}`, AuthHeader)
 		.then(function (response) {
 			return response.data.dasboardDetails;
 		})

@@ -176,6 +176,7 @@ const AddUpdateBranch = (props: AddUpdateBranchProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="text"
 									placeholder="Branch Name"
 									value={branchData.branchName}
@@ -199,6 +200,7 @@ const AddUpdateBranch = (props: AddUpdateBranchProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="text"
 									placeholder="Address"
 									multiline
@@ -224,6 +226,7 @@ const AddUpdateBranch = (props: AddUpdateBranchProps): React.JSX.Element => {
 								</InputLabel>
 								<TextField
 									sx={{ width: '65%' }}
+									size="small"
 									type="number"
 									placeholder="Phone Number"
 									value={branchData.phoneNumber}

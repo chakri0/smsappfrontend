@@ -20,7 +20,7 @@ import UpdateItem from './AddItemModal';
 // Reducer
 import {
 	deleteItemById,
-	fetchItems,
+	fetchItemsByBranch,
 } from '../../Services/Reducers/ItemReducer';
 
 // Services
@@ -51,22 +51,33 @@ const columns: readonly Column[] = [
 	{ id: 'action', label: 'Action', minWidth: 100 },
 ];
 
-export default function StickyHeadTable(): React.JSX.Element {
+interface ItemTableProps {
+	selectedBranch: string;
+}
+
+export default function StickyHeadTable(
+	props: ItemTableProps,
+): React.JSX.Element {
 	const dispatch = useAppDispatch();
 
-	const { items, loading } = useAppSelector((state) => state.item);
+	const { selectedBranch } = props;
+
+	const { branchItems, loading } = useAppSelector((state) => state.item);
 
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(10);
 	const [openEditModal, setOpenEditModal] = React.useState(false);
 	const [tobeEditedItemDetails, setTobeEditedItemDetails] = React.useState({
 		id: '',
+		branchId: { id: '' },
 	});
 
 	useEffect(() => {
-		void getItems();
+		if (selectedBranch.length > 0) {
+			void getItems();
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dispatch]);
+	}, [dispatch, selectedBranch]);
 
 	const handleEditModalOpen = (row: ListItemResponse): void => {
 		setTobeEditedItemDetails(row);
@@ -74,11 +85,11 @@ export default function StickyHeadTable(): React.JSX.Element {
 	};
 	const handleEditModalClose = (): void => {
 		setOpenEditModal(false);
-		setTobeEditedItemDetails({ id: '' });
+		setTobeEditedItemDetails({ id: '', branchId: { id: '' } });
 	};
 
 	async function getItems(): Promise<void> {
-		await dispatch(fetchItems());
+		await dispatch(fetchItemsByBranch(props.selectedBranch));
 	}
 
 	const handleChangePage = (event: unknown, newPage: number): void => {
@@ -98,7 +109,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 		const result = await dispatch(deleteItemById(itemDetails.id));
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Item removed Successfully');
-			await dispatch(fetchItems());
+			await dispatch(fetchItemsByBranch(props.selectedBranch));
 		}
 	};
 
@@ -112,7 +123,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 					boxShadow: 'none',
 					borderRadius: '0',
 				}}>
-				{items.length > 0 ? (
+				{branchItems.length > 0 ? (
 					<>
 						<TableContainer sx={{ maxHeight: 440 }}>
 							<Table
@@ -133,7 +144,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{items
+									{branchItems
 										.slice(
 											page * rowsPerPage,
 											page * rowsPerPage + rowsPerPage,
@@ -194,7 +205,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 						<TablePagination
 							rowsPerPageOptions={[10, 25, 100]}
 							component="div"
-							count={items.length}
+							count={branchItems.length}
 							rowsPerPage={rowsPerPage}
 							page={page}
 							onPageChange={handleChangePage}
@@ -210,6 +221,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 				open={openEditModal}
 				handleClose={handleEditModalClose}
 				toBeEditedItemDetails={tobeEditedItemDetails}
+				selectedBranch={props.selectedBranch}
 			/>
 		</>
 	);

@@ -17,7 +17,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 // Reducer
-import { fetchItems } from '../../Services/Reducers/ItemReducer';
+import { fetchItemsByBranch } from '../../Services/Reducers/ItemReducer';
 
 // Hooks
 import { useAppDispatch, useAppSelector } from '../../Hooks/reduxHooks';
@@ -30,7 +30,7 @@ import { type ListCategoryResponse } from '../../Services/APIs/CategoryAPI';
 import dayjs, { type Dayjs } from 'dayjs';
 import {
 	createInventoryItem,
-	fetchInventoryItems,
+	fetchInventoryItemsByBranch,
 	updateInventoryItemById,
 } from '../../Services/Reducers/InventoryItemReducer';
 import { type InventoryItem } from 'src/Services/APIs/InventoryItemAPI';
@@ -55,6 +55,8 @@ interface InventoryItemDataState {
 	// status: string;
 	expireDate: string;
 	item: string;
+	branch: object;
+	entryDate: string;
 }
 
 export interface ToBeEditedItem {
@@ -69,6 +71,7 @@ export interface ToBeEditedItem {
 	updatedAt?: string;
 	action?: string;
 	category?: ListCategoryResponse;
+	branch: { id: string };
 }
 
 const initialItemData = {
@@ -77,45 +80,40 @@ const initialItemData = {
 	status: 'Select Status',
 	expireDate: '',
 	item: 'Select Item',
+	branch: { id: '' },
+	entryDate: '',
 };
 
 interface AddItemProps {
 	open: boolean;
 	handleClose: () => void;
 	toBeEditedItemDetails: InventoryItem | null;
+	selectedBranch: string;
 }
-
-/* const StatusType = [
-	{
-		id: 'InStock',
-		name: 'In Stock',
-	},
-	{
-		id: 'consumed',
-		name: 'Consumed',
-	},
-]; */
 
 const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 	const dispatch = useAppDispatch();
 
-	const { open, handleClose, toBeEditedItemDetails } = props;
-	const { items } = useAppSelector((state) => state.item);
+	const { open, handleClose, toBeEditedItemDetails, selectedBranch } = props;
+	const { branchItems } = useAppSelector((state) => state.item);
 
 	const [itemDetails, setItemDetails] =
 		useState<InventoryItemDataState>(initialItemData);
 	const [date, setDate] = React.useState<Dayjs>();
+	const [entryDate, setEntryDate] = React.useState<Dayjs>();
 
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
 			try {
-				await dispatch(fetchItems());
+				await dispatch(fetchItemsByBranch(selectedBranch));
 			} catch (error) {
 				console.error('Error fetching Items:', error);
 			}
 		};
+		if (selectedBranch.length > 0) {
+			void fetchData();
+		}
 
-		void fetchData();
 		if (toBeEditedItemDetails !== null) {
 			setItemDetails({
 				item: toBeEditedItemDetails.item.id ?? 'Select Item',
@@ -124,12 +122,14 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 					toBeEditedItemDetails.availableQuantity ?? '',
 				// status: toBeEditedItemDetails.status ?? '',
 				expireDate: toBeEditedItemDetails.expireDate ?? '',
+				branch: toBeEditedItemDetails.branch ?? '',
+				entryDate: toBeEditedItemDetails.updatedAt ?? '',
 			});
 			setDate(dayjs(toBeEditedItemDetails.expireDate));
 		} else {
 			setItemDetails(initialItemData);
 		}
-	}, [dispatch, open, toBeEditedItemDetails]);
+	}, [dispatch, open, selectedBranch, toBeEditedItemDetails]);
 
 	const validateItemDetails = (): boolean => {
 		if (itemDetails.item === 'Select Item') {
@@ -173,12 +173,14 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 			availableQuantity: itemDetails.availableQuantity,
 			// status: itemDetails.status,
 			expireDate: itemDetails.expireDate,
+			updatedAt: itemDetails.entryDate,
+			branchId: selectedBranch,
 		};
 
 		const result = await dispatch(createInventoryItem(requestBody));
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Inventory Item Created Successfully');
-			await dispatch(fetchInventoryItems());
+			await dispatch(fetchInventoryItemsByBranch(selectedBranch));
 			handleClose();
 		}
 	};
@@ -194,6 +196,8 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 			availableQuantity: itemDetails.availableQuantity,
 			// status: itemDetails.status,
 			expireDate: itemDetails.expireDate,
+			branchId: selectedBranch,
+			updatedAt: itemDetails.entryDate,
 		};
 
 		const inventoryItemId = toBeEditedItemDetails?.id;
@@ -203,7 +207,7 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 			);
 			if (!isAPIActionRejected(result.type)) {
 				toast.success('Inventory item updated successfully');
-				await dispatch(fetchInventoryItems());
+				await dispatch(fetchInventoryItemsByBranch(selectedBranch));
 				handleClose();
 			}
 		}
@@ -253,11 +257,15 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 										value="Select Item">
 										Select Item
 									</MenuItem>
-									{items.map((item) => (
-										<MenuItem key={item.id} value={item.id}>
-											{item.name}
-										</MenuItem>
-									))}
+									{branchItems !== undefined
+										? branchItems.map((item) => (
+												<MenuItem
+													key={item.id}
+													value={item.id}>
+													{item.name}
+												</MenuItem>
+										  ))
+										: ''}
 								</Select>
 							</Box>
 							<Box
@@ -371,6 +379,39 @@ const AddInventoryItem = (props: AddItemProps): React.JSX.Element => {
 														),
 													);
 													setDate(newValue);
+												}
+											}}
+										/>
+									</DemoContainer>
+								</LocalizationProvider>
+							</Box>
+
+							<Box
+								sx={{
+									display: 'flex',
+									justifyContent: 'space-between',
+									alignTtems: 'baseline',
+								}}>
+								<InputLabel sx={{ marginRight: '10%' }}>
+									Entry Date
+								</InputLabel>
+								<LocalizationProvider
+									dateAdapter={AdapterDayjs}>
+									<DemoContainer
+										sx={{ width: '65%' }}
+										components={['DatePicker']}>
+										<DatePicker
+											sx={{ width: '100%' }}
+											value={entryDate}
+											onChange={(newValue) => {
+												if (newValue !== null) {
+													handleInputChange(
+														'entryDate',
+														newValue?.format(
+															'YYYY/MM/DD',
+														),
+													);
+													setEntryDate(newValue);
 												}
 											}}
 										/>

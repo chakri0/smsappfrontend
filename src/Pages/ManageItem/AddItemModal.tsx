@@ -6,7 +6,6 @@ import {
 	Modal,
 	InputLabel,
 	Button,
-	// FormControl,
 	MenuItem,
 	Select,
 } from '@mui/material';
@@ -16,7 +15,7 @@ import { toast } from 'react-toastify';
 // Reducer
 import {
 	createItem,
-	fetchItems,
+	fetchItemsByBranch,
 	updateItemById,
 } from '../../Services/Reducers/ItemReducer';
 import {
@@ -54,6 +53,7 @@ interface ItemDataState {
 	image: string;
 	overallThreshold: string;
 	weeklyThreshold: string;
+	branchId: object;
 }
 
 export interface ToBeEditedItem {
@@ -68,6 +68,7 @@ export interface ToBeEditedItem {
 	updatedAt?: string;
 	action?: string;
 	category?: ListCategoryResponse;
+	branchId: { id: string };
 }
 
 const initialItemData = {
@@ -77,18 +78,19 @@ const initialItemData = {
 	image: '',
 	overallThreshold: '',
 	weeklyThreshold: '',
+	branchId: { id: '' },
 };
 
 interface AddItemProps {
 	open: boolean;
 	handleClose: () => void;
 	toBeEditedItemDetails: ToBeEditedItem;
+	selectedBranch: string;
 }
 
 const AddItem = (props: AddItemProps): React.JSX.Element => {
 	const dispatch = useAppDispatch();
-
-	const { open, handleClose, toBeEditedItemDetails } = props;
+	const { open, handleClose, toBeEditedItemDetails, selectedBranch } = props;
 
 	const { categories } = useAppSelector((state) => state.category);
 
@@ -99,32 +101,35 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 	const [newCategoryName, setNewCategoryName] = useState('');
 
 	useEffect(() => {
+		const getCategories = async (): Promise<void> => {
+			await dispatch(fetchCategories());
+		};
+
 		void getCategories();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [dispatch]);
 
 	useEffect(() => {
-		if (toBeEditedItemDetails.id !== '') {
-			setItemDetails({
-				name: toBeEditedItemDetails.name ?? '',
-				description: toBeEditedItemDetails.description ?? '',
-				category:
-					toBeEditedItemDetails?.category?.id ?? 'Select Category',
-				image: toBeEditedItemDetails.image ?? '',
-				overallThreshold: toBeEditedItemDetails.overallThreshold ?? '',
-				weeklyThreshold: toBeEditedItemDetails.weeklyThreshold ?? '',
-			});
-		} else {
-			setItemDetails(initialItemData);
-		}
+		setItemDetails(
+			toBeEditedItemDetails.id !== ''
+				? {
+						name: toBeEditedItemDetails.name ?? '',
+						description: toBeEditedItemDetails.description ?? '',
+						category:
+							toBeEditedItemDetails?.category?.id ??
+							'Select Category',
+						image: toBeEditedItemDetails.image ?? '',
+						overallThreshold:
+							toBeEditedItemDetails.overallThreshold ?? '',
+						weeklyThreshold:
+							toBeEditedItemDetails.weeklyThreshold ?? '',
+						branchId: toBeEditedItemDetails.branchId ?? '',
+				  }
+				: initialItemData,
+		);
 
 		setShowAddCategoryOption(false);
 		setNewCategoryName('');
 	}, [open, toBeEditedItemDetails]);
-
-	async function getCategories(): Promise<void> {
-		await dispatch(fetchCategories());
-	}
 
 	const validateItemDetails = (): boolean => {
 		if (itemDetails.name.trim() === '') {
@@ -165,12 +170,13 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 			dailyThreshold: '',
 			weeklyThreshold: itemDetails.weeklyThreshold,
 			overallThreshold: itemDetails.overallThreshold,
+			branchId: selectedBranch,
 		};
 
 		const result = await dispatch(createItem(requestBody));
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Item Created Successfully');
-			await dispatch(fetchItems());
+			await dispatch(fetchItemsByBranch(selectedBranch));
 			handleClose();
 		}
 	};
@@ -187,6 +193,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 			dailyThreshold: '',
 			weeklyThreshold: itemDetails.weeklyThreshold,
 			overallThreshold: itemDetails.overallThreshold,
+			branchId: selectedBranch,
 		};
 		const itemId = toBeEditedItemDetails.id;
 
@@ -195,7 +202,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 		);
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Item updated Successfully');
-			await dispatch(fetchItems());
+			await dispatch(fetchItemsByBranch(selectedBranch));
 			handleClose();
 		}
 	};
@@ -212,7 +219,7 @@ const AddItem = (props: AddItemProps): React.JSX.Element => {
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Category Created Successfully');
 			setNewCategoryName('');
-			void getCategories();
+			await dispatch(fetchCategories());
 		}
 	};
 

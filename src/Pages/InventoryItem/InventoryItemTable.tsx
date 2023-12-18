@@ -22,10 +22,10 @@ import UpdateItem from './AddInventoryItem';
 // Services
 import {
 	deleteInventoryItemById,
-	fetchInventoryItems,
+	fetchInventoryItemsByBranch,
 } from '../../Services/Reducers/InventoryItemReducer';
 import { type InventoryItem } from '../../Services/APIs/InventoryItemAPI';
-import { fetchItems } from 'src/Services/Reducers/ItemReducer';
+import { fetchItemsByBranch } from 'src/Services/Reducers/ItemReducer';
 
 // Utils
 import { isAPIActionRejected } from '../../Utils/helper';
@@ -59,10 +59,16 @@ const columns: readonly Column[] = [
 	{ id: 'action', label: 'Action', minWidth: 100 },
 ];
 
-export default function StickyHeadTable(): React.JSX.Element {
+interface InventoryItemTableProps {
+	selectedBranch: string;
+}
+
+export default function StickyHeadTable(
+	props: InventoryItemTableProps,
+): React.JSX.Element {
 	const dispatch = useAppDispatch();
 
-	const { InventoryItems, loading } = useAppSelector(
+	const { branchInventoryItems, loading } = useAppSelector(
 		(state) => state.inventoryItem,
 	);
 
@@ -73,10 +79,12 @@ export default function StickyHeadTable(): React.JSX.Element {
 		React.useState<InventoryItem | null>(null);
 
 	useEffect(() => {
-		void getInventoryItems();
-		void getItems();
+		if (props.selectedBranch.length > 0) {
+			void getInventoryItems();
+			void getItems();
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dispatch]);
+	}, [dispatch, props.selectedBranch]);
 
 	const handleEditModalOpen = (row: InventoryItem): void => {
 		setTobeEditedItemDetails(row);
@@ -88,11 +96,11 @@ export default function StickyHeadTable(): React.JSX.Element {
 	};
 
 	async function getInventoryItems(): Promise<void> {
-		await dispatch(fetchInventoryItems());
+		await dispatch(fetchInventoryItemsByBranch(props.selectedBranch));
 	}
 
 	async function getItems(): Promise<void> {
-		await dispatch(fetchItems());
+		await dispatch(fetchItemsByBranch(props.selectedBranch));
 	}
 
 	const handleChangePage = (event: unknown, newPage: number): void => {
@@ -112,7 +120,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 		const result = await dispatch(deleteInventoryItemById(itemDetails.id));
 		if (!isAPIActionRejected(result.type)) {
 			toast.success('Inventory Item details removed Successfully');
-			await dispatch(fetchInventoryItems());
+			await dispatch(fetchInventoryItemsByBranch(props.selectedBranch));
 		}
 	};
 
@@ -126,7 +134,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 					boxShadow: 'none',
 					borderRadius: '0',
 				}}>
-				{InventoryItems.length > 0 ? (
+				{branchInventoryItems.length > 0 ? (
 					<>
 						<TableContainer sx={{ maxHeight: 440 }}>
 							<Table
@@ -147,80 +155,86 @@ export default function StickyHeadTable(): React.JSX.Element {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{InventoryItems.slice(
-										page * rowsPerPage,
-										page * rowsPerPage + rowsPerPage,
-									).map((row, index) => {
-										return (
-											<TableRow
-												hover
-												role="checkbox"
-												tabIndex={-1}
-												key={`item-${index}-${row.id}`}>
-												{columns.map((column) => {
-													const value =
-														row[column.id];
-													const item = row.item.name;
-													const category =
-														row.item.category.name;
-													const addedBy =
-														row.addedBy.firstName ??
-														row.addedBy.email;
-													return (
-														<TableCell
-															key={column.id}
-															align={
-																column.align
-															}>
-															{column.id ===
-																'category' &&
-																category}
-															{column.id ===
-																'name' && item}
-															{column.id ===
-																'addedBy' &&
-																addedBy}
-															{column.id ===
-																'action' && (
-																<>
-																	<Button
-																		onClick={() => {
-																			handleEditModalOpen(
-																				row,
-																			);
-																		}}>
-																		Edit
-																	</Button>
-																	<Button
-																		onClick={() => {
-																			void handleItemDelete(
-																				row,
-																			);
-																		}}>
-																		Delete
-																	</Button>
-																</>
-															)}
-															{column.id !==
-																'category' &&
-																column.id !==
+									{branchInventoryItems
+										.slice(
+											page * rowsPerPage,
+											page * rowsPerPage + rowsPerPage,
+										)
+										.map((row, index) => {
+											return (
+												<TableRow
+													hover
+													role="checkbox"
+													tabIndex={-1}
+													key={`item-${index}-${row?.id}`}>
+													{columns.map((column) => {
+														const value =
+															row[column.id];
+														const item =
+															row?.item?.name;
+														const category =
+															row.item?.category
+																?.name;
+														const addedBy =
+															row.addedBy
+																?.firstName ??
+															row.addedBy?.email;
+														return (
+															<TableCell
+																key={column.id}
+																align={
+																	column.align
+																}>
+																{column.id ===
+																	'category' &&
+																	category}
+																{column.id ===
 																	'name' &&
-																column.id !==
+																	item}
+																{column.id ===
 																	'addedBy' &&
-																value?.toString()}
-														</TableCell>
-													);
-												})}
-											</TableRow>
-										);
-									})}
+																	addedBy}
+																{column.id ===
+																	'action' && (
+																	<>
+																		<Button
+																			onClick={() => {
+																				handleEditModalOpen(
+																					row,
+																				);
+																			}}>
+																			Edit
+																		</Button>
+																		<Button
+																			onClick={() => {
+																				void handleItemDelete(
+																					row,
+																				);
+																			}}>
+																			Delete
+																		</Button>
+																	</>
+																)}
+																{column.id !==
+																	'category' &&
+																	column.id !==
+																		'name' &&
+																	column.id !==
+																		'addedBy' &&
+																	value?.toString()}
+															</TableCell>
+														);
+													})}
+												</TableRow>
+											);
+										})}
 								</TableBody>
 							</Table>
 						</TableContainer>
 						<TablePagination
 							rowsPerPageOptions={[10, 25, 100]}
 							component="div"
-							count={InventoryItems.length}
+							count={branchInventoryItems.length}
 							rowsPerPage={rowsPerPage}
 							page={page}
 							onPageChange={handleChangePage}
@@ -236,6 +250,7 @@ export default function StickyHeadTable(): React.JSX.Element {
 				open={openEditModal}
 				handleClose={handleEditModalClose}
 				toBeEditedItemDetails={tobeEditedItemDetails}
+				selectedBranch={props.selectedBranch}
 			/>
 		</>
 	);

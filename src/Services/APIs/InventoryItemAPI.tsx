@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getAccessToken } from '../../Utils/helper';
 import { type ListItemResponse } from './ItemAPI';
+import { type ListBranchesResponse } from './BranchAPI';
 
 export interface AddInventoryItemRequest {
 	itemId: string;
@@ -8,6 +9,8 @@ export interface AddInventoryItemRequest {
 	availableQuantity: string;
 	// status: string;
 	expireDate: string;
+	updatedAt: string;
+	branchId: string;
 }
 
 interface User {
@@ -29,6 +32,7 @@ export interface InventoryItem {
 	addedBy: User;
 	name: string;
 	category: string;
+	branch: ListBranchesResponse;
 	action?: string;
 }
 
@@ -112,6 +116,33 @@ export const deleteInventoryItem = async (
 		)
 		.then(function (response) {
 			return response.status === 200;
+		})
+		.catch(function (error) {
+			console.log(error);
+			throw error;
+		});
+	return await response;
+};
+
+export const listInventoryItemsByBranch = async (
+	branchId: string,
+): Promise<InventoryItem[]> => {
+	const AuthHeader = {
+		headers: {
+			Authorization: `${getAccessToken()}`,
+		},
+	};
+	const response = axios
+		.get(
+			`${baseAPIURL}/inventory/item/listByBranch/${branchId}`,
+			AuthHeader,
+		)
+		.then(function (response) {
+			console.log(
+				' response.data.inventoryItemsList',
+				response.data.inventoryItemsList,
+			);
+			return response.data.inventoryItemsList;
 		})
 		.catch(function (error) {
 			console.log(error);

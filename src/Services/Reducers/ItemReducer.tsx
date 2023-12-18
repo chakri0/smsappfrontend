@@ -7,6 +7,7 @@ import {
 	type UpdateItemRequestBodyParams,
 	updateItem,
 	deleteItem,
+	listItemsByBranch,
 } from '../APIs/ItemAPI';
 
 export const fetchItems = createAsyncThunk('item/fetchItems', async () => {
@@ -64,14 +65,29 @@ export const deleteItemById = createAsyncThunk(
 	},
 );
 
+export const fetchItemsByBranch = createAsyncThunk(
+	'item/fetchItemsByBranch',
+	async (branchId: string) => {
+		try {
+			const response = await listItemsByBranch(branchId);
+			return response;
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	},
+);
+
 export interface ItemState {
 	items: ListItemResponse[];
+	branchItems: ListItemResponse[];
 	loading: boolean;
 	error: string | undefined | null;
 }
 
 const initialState: ItemState = {
 	items: [],
+	branchItems: [],
 	loading: false,
 	error: null,
 };
@@ -127,6 +143,19 @@ const itemSlice = createSlice({
 				state.loading = false;
 			})
 			.addCase(deleteItemById.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.error.message;
+			})
+
+			// List items
+			.addCase(fetchItemsByBranch.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(fetchItemsByBranch.fulfilled, (state, action) => {
+				state.loading = false;
+				state.branchItems = action.payload;
+			})
+			.addCase(fetchItemsByBranch.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.error.message;
 			});

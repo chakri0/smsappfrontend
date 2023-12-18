@@ -11,35 +11,23 @@ const initialDashboardDetails: DashboardDetails = {
 	totalCategories: {
 		count: '0',
 	},
-	itemsWithTotalStock: [
-		{
-			itemName: '',
-			availableQuantity: '0',
-			dailyConsumption: '0',
-			dailyThreshold: '0',
-			weeklyThreshold: '0',
-			overallThreshold: '0',
-			category: '',
-			healthScore: 0,
-		},
-		{
-			itemName: '',
-			availableQuantity: '0',
-			dailyConsumption: '0',
-			dailyThreshold: '0',
-			weeklyThreshold: '0',
-			overallThreshold: '0',
-			category: '',
-			healthScore: 0,
-		},
-	],
+	totalQuantity: {
+		totalAvailableQuantity: '0',
+	},
+	totalWastedItems: {
+		count: '0',
+	},
+	recentOrders: [],
+	lowStocks: [],
+	itemsWithTotalStock: [],
+	wastedItemsList: [],
 };
 
 export const fetcDeshboardDetails = createAsyncThunk(
 	'dashboard/fetcDeshboardDetails',
-	async () => {
+	async (branchId: string) => {
 		try {
-			const response = await getDeshboardDetails();
+			const response = await getDeshboardDetails(branchId);
 			return response;
 		} catch (error) {
 			console.error(error);

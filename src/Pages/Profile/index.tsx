@@ -43,7 +43,6 @@ interface ProfileDetails {
 const ProfileSettings = (): React.JSX.Element => {
 	const dispatch = useDispatch<AppDispatch>();
 	const { user } = useAppSelector((state) => state.user);
-	console.log(user);
 
 	const [userProfileDetails, setUserProfileDetails] =
 		useState<ProfileDetails>();

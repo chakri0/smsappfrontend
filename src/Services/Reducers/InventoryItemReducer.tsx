@@ -6,6 +6,7 @@ import {
 	type InventoryItem,
 	updateInventoryItem,
 	deleteInventoryItem,
+	listInventoryItemsByBranch,
 } from '../APIs/InventoryItemAPI';
 
 export const fetchInventoryItems = createAsyncThunk(
@@ -66,14 +67,29 @@ export const deleteInventoryItemById = createAsyncThunk(
 	},
 );
 
+export const fetchInventoryItemsByBranch = createAsyncThunk(
+	'item/fetchInventoryItemsByBranch',
+	async (branchId: string) => {
+		try {
+			const response = await listInventoryItemsByBranch(branchId);
+			return response;
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	},
+);
+
 export interface ItemState {
 	InventoryItems: InventoryItem[];
+	branchInventoryItems: InventoryItem[];
 	loading: boolean;
 	error: string | undefined | null;
 }
 
 const initialState: ItemState = {
 	InventoryItems: [],
+	branchInventoryItems: [],
 	loading: false,
 	error: null,
 };
@@ -129,6 +145,20 @@ const inventoryItemSlice = createSlice({
 				state.loading = false;
 			})
 			.addCase(deleteInventoryItemById.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.error.message;
+			})
+
+			// List items
+			.addCase(fetchInventoryItemsByBranch.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(fetchInventoryItemsByBranch.fulfilled, (state, action) => {
+				state.loading = false;
+				console.log('action.payload', action.payload);
+				state.branchInventoryItems = action.payload;
+			})
+			.addCase(fetchInventoryItemsByBranch.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.error.message;
 			});
