@@ -11,7 +11,7 @@ import {
 	Grid,
 	Typography,
 } from '@mui/material';
-import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';
 
 // Asset
 import phillysLogo from '../../Assets/Images/Phillys_Logo.png';
@@ -22,13 +22,14 @@ import { useAppDispatch, useAppSelector } from '../../Hooks/reduxHooks';
 
 // Reducer
 import {
-	deleteBranchById,
+	// deleteBranchById,
 	fetchBranches,
 } from '../../Services/Reducers/BranchReducer';
 
 // Layout
 import Loader from '../../Layout/Loader';
-import { isAPIActionRejected } from '../../Utils/helper';
+// import { isAPIActionRejected } from '../../Utils/helper';
+import DeleteBranch from './DeleteBranch';
 
 export interface BranchDetails {
 	id: string;
@@ -46,6 +47,8 @@ const ManageBranch = (): React.JSX.Element => {
 	const { branches, loading } = useAppSelector((state) => state.branch);
 
 	const [open, setOpen] = React.useState(false);
+	const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
+	const [tobeDeletedBranchId, setTobeDeletedBranchId] = React.useState('');
 	const [editBranch, setEditBranch] = React.useState<BranchDetails>({
 		id: '',
 	});
@@ -70,12 +73,12 @@ const ManageBranch = (): React.JSX.Element => {
 		setEditBranch({ id: '' });
 	};
 
-	const handleBranchDelete = async (branchId: string): Promise<void> => {
-		const result = await dispatch(deleteBranchById(branchId));
-		if (!isAPIActionRejected(result.type)) {
-			toast.success('Branch deleted Successfully');
-			await dispatch(fetchBranches());
-		}
+	const handleOpenDeleteModal = (): void => {
+		setOpenDeleteModal(true);
+	};
+	const handleCloseDeleteModal = (): void => {
+		setOpenDeleteModal(false);
+		setTobeDeletedBranchId('');
 	};
 
 	const handleEditBranch = (branch: BranchDetails): void => {
@@ -172,7 +175,8 @@ const ManageBranch = (): React.JSX.Element => {
 									color="primary"
 									variant="outlined"
 									onClick={() => {
-										void handleBranchDelete(branch.id);
+										handleOpenDeleteModal();
+										setTobeDeletedBranchId(branch.id);
 									}}>
 									Delete
 								</Button>
@@ -192,6 +196,12 @@ const ManageBranch = (): React.JSX.Element => {
 				open={open}
 				handleClose={handleClose}
 				editBranchDetails={editBranch}
+			/>
+
+			<DeleteBranch
+				open={openDeleteModal}
+				handleClose={handleCloseDeleteModal}
+				branchId={tobeDeletedBranchId}
 			/>
 		</>
 	);

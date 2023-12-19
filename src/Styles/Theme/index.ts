@@ -9,8 +9,8 @@ const theme = createTheme({
 		},
 		secondary: { main: '#333333' },
 		error: { main: '#8D0000' },
-		warning: { main: '##FFD700' },
-		info: { main: '##6296b7' },
+		warning: { main: '#FFD700' },
+		info: { main: '#6296b7' },
 		success: { main: '#12B76A', light: '#7FFF00' },
 		background: {
 			// default: '#FFF',

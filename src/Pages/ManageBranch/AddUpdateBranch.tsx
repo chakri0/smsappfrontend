@@ -239,7 +239,7 @@ const AddUpdateBranch = (props: AddUpdateBranchProps): React.JSX.Element => {
 								/>
 							</Box>
 
-							<Box
+							{/* <Box
 								sx={{
 									display: 'flex',
 									justifyContent: 'space-between',
@@ -260,7 +260,7 @@ const AddUpdateBranch = (props: AddUpdateBranchProps): React.JSX.Element => {
 										// onChange={handleImageChange}
 									/>
 								</Button>
-							</Box>
+							</Box> */}
 						</Stack>
 					</Box>
 
